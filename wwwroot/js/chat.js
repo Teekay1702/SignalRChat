@@ -1,30 +1,37 @@
-﻿"use strict";
+﻿let username = sessionStorage.getItem("username");
 
-var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+if (!username) {
+    username = prompt("Enter your username:");
+    sessionStorage.setItem("username", username);
+}
 
-//Disable the send button until connection is established.
-document.getElementById("sendButton").disabled = true;
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .build();
 
-connection.on("ReceiveMessage", function (user, message) {
-    var li = document.createElement("li");
-    document.getElementById("messagesList").appendChild(li);
-    // We can assign user-supplied strings to an element's textContent because it
-    // is not interpreted as markup. If you're assigning in any other way, you 
-    // should be aware of possible script injection concerns.
-    li.textContent = `${user} says ${message}`;
+connection.start()
+    .then(() => console.log("Connected to SignalR"))
+    .catch(err => console.error("Error connecting:", err));
+
+document.getElementById("messageInput").addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
 });
 
-connection.start().then(function () {
-    document.getElementById("sendButton").disabled = false;
-}).catch(function (err) {
-    return console.error(err.toString());
-});
+function sendMessage() {
+    const message = document.getElementById("messageInput").value;
 
-document.getElementById("sendButton").addEventListener("click", function (event) {
-    var user = document.getElementById("userInput").value;
-    var message = document.getElementById("messageInput").value;
-    connection.invoke("SendMessage", user, message).catch(function (err) {
-        return console.error(err.toString());
-    });
-    event.preventDefault();
+    if (message) {
+        connection.invoke("SendMessage", username, message)
+            .catch(err => console.error(err.toString()));
+
+        document.getElementById("messageInput").value = "";
+    }
+}
+
+connection.on("ReceiveMessage", (user, message) => {
+    const msg = document.createElement("li");
+    msg.textContent = `${user}: ${message}`;
+    document.getElementById("messagesList").appendChild(msg);
 });

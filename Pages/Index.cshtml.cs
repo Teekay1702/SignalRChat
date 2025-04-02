@@ -1,20 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace SignalRChat.Pages
+[Authorize]
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly ChatDbContext _db;
+
+    public IndexModel(ChatDbContext db)
     {
-        private readonly ILogger<IndexModel> _logger;
+        _db = db;
+    }
 
-        public IndexModel(ILogger<IndexModel> logger)
-        {
-            _logger = logger;
-        }
+    public List<ChatMessage> Messages { get; set; }
 
-        public void OnGet()
-        {
-
-        }
+    public async Task OnGetAsync()
+    {
+        Messages = await _db.Messages.ToListAsync();
     }
 }
