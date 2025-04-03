@@ -83,11 +83,34 @@ jobs:
     - name: Build the application
       run: msbuild ${{ env.Solution_Name }} /p:Configuration=${{ matrix.configuration }}
 
-    # Optional: If you have other steps, include them here
-
-    # Example: Publish the build artifacts
-    - name: Publish build artifacts
+    # Upload build artifacts
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Build Artifacts
         path: path/to/build/artifacts  # Replace with the actual path to your build artifacts
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: Build Artifacts
+        path: path/to/save/artifacts  # Replace with the path where you want to save the artifacts
+
+    # Deploy the application
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v4
+      with:
+        app-name: your-app-name  # Replace with your Azure Web App name
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # Ensure you have this secret set up in your repository
+
+    # Optional: Notify team
+    - name: Notify team
+      run: echo "Deployment to production successful!"
