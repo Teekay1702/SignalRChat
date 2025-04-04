@@ -23,7 +23,7 @@ function sendMessage() {
     const message = document.getElementById("messageInput").value;
 
     if (message) {
-        connection.invoke("SendMessage", username, message)
+        connection.invoke("SendMessage", message)
             .catch(err => console.error(err.toString()));
 
         document.getElementById("messageInput").value = "";
