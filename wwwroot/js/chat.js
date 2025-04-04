@@ -6,8 +6,9 @@ if (!username) {
 }
 
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
+    .withUrl("/chatHub", { transport: signalR.HttpTransportType.LongPolling }) // Use LongPolling instead of WebSockets
     .build();
+
 
 connection.start()
     .then(() => console.log("Connected to SignalR"))
